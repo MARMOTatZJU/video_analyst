@@ -4,11 +4,13 @@ import cv2
 import numpy as np
 from yacs.config import CfgNode
 
-from ..target_base import TRACK_TARGETS, TargetBase
+from ..target_base import TRACK_TARGETS, VOS_TARGETS, CLS_TARGETS, TargetBase
 from .utils import make_densebox_target
 
 
 @TRACK_TARGETS.register
+@VOS_TARGETS.register
+@CLS_TARGETS.register
 class IdentityTarget(TargetBase):
     r"""
     Identity target

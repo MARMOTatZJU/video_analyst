@@ -11,11 +11,12 @@ import torch
 
 from videoanalyst.utils import dist_utils
 
-from ..monitor_base import TRACK_MONITORS, VOS_MONITORS, MonitorBase
+from ..monitor_base import TRACK_MONITORS, VOS_MONITORS, CLS_MONITORS, MonitorBase
 
 
 @TRACK_MONITORS.register
 @VOS_MONITORS.register
+@CLS_MONITORS.register
 class TextInfo(MonitorBase):
     r"""
     Print tracking information during training.

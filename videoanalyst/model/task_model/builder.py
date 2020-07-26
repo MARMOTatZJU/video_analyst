@@ -12,7 +12,7 @@ from videoanalyst.utils import merge_cfg_into_hps
 def build(task: str,
           cfg: CfgNode,
           backbone: ModuleBase,
-          head: ModuleBase,
+          head: ModuleBase = None,
           loss: ModuleBase = None):
     r"""
     Builder function.
@@ -41,7 +41,7 @@ def build(task: str,
         logger.error("no task model for task {}".format(task))
         exit(-1)
 
-    if task == "track":
+    if task in ("track", "cls") :
         name = cfg.name
         task_module = task_modules[name](backbone, head, loss)
         hps = task_module.get_hps()

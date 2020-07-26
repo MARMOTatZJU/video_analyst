@@ -10,10 +10,12 @@ from videoanalyst.utils import Registry
 
 TRACK_MONITORS = Registry('TRACK_MONITOR')
 VOS_MONITORS = Registry('VOS_MONITOR')
+CLS_MONITORS = Registry('CLS_MONITOR')
 
 TASK_MONITORS = dict(
     track=TRACK_MONITORS,
     vos=VOS_MONITORS,
+    cls=CLS_MONITORS,
 )
 
 

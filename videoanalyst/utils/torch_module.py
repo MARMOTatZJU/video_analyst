@@ -32,6 +32,7 @@ def unwrap_model(model):
 def convert_numpy_to_tensor(raw_data):
     r"""
     convert numpy array dict or list to torch.Tensor
+        recursively applied into nested list/dict
     """
     elem_type = type(raw_data)
     if (elem_type.__module__ == "numpy" and elem_type.__name__ != "str_"
@@ -39,8 +40,10 @@ def convert_numpy_to_tensor(raw_data):
         return torch.from_numpy(raw_data).float()
     elif isinstance(raw_data, collections.abc.Mapping):
         data = {key: convert_numpy_to_tensor(raw_data[key]) for key in raw_data}
-        if 'image' in data:
-            data['image'] = data['image'].permute(2, 0, 1)
+        # TODO: verify if this conversion is applied in exsiting trained
+        #     disabled as it is too implicit
+        # if 'image' in data:
+        #     data['image'] = data['image'].permute(2, 0, 1)
         return data
     elif isinstance(raw_data, collections.abc.Sequence):
         return [convert_numpy_to_tensor(data) for data in raw_data]

@@ -52,6 +52,10 @@ def build(
                                                   decoder=decoder,
                                                   loss=losses)
 
+    elif task == "cls":
+        backbone = backbone_builder.build(task, cfg.backbone)
+        losses = loss_builder.build(task, cfg.losses)
+        task_model = task_builder.build(task, cfg.task_model, backbone, None, losses)
     else:
         logger.error("model for task {} has not been implemented".format(task))
         exit(-1)

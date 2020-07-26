@@ -16,7 +16,7 @@ eps = np.finfo(np.float32).tiny
 class MultiBCELoss(ModuleBase):
 
     default_hyper_params = dict(
-        name="multi_bceloss",
+        name="multi_bceloss",  # will be displayed in monitor
         sub_loss_weights=[0.1, 0.3, 1.0],
         weight=1.0,
         top_ratio=0.0,

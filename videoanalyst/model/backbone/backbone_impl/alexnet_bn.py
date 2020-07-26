@@ -5,13 +5,15 @@ import torch
 import torch.nn as nn
 
 from videoanalyst.model.backbone.backbone_base import (TRACK_BACKBONES,
-                                                       VOS_BACKBONES)
+                                                       VOS_BACKBONES,
+                                                       CLS_BACKBONES)
 from videoanalyst.model.common_opr.common_block import conv_bn_relu
 from videoanalyst.model.module_base import ModuleBase
 
 
-@VOS_BACKBONES.register
 @TRACK_BACKBONES.register
+@VOS_BACKBONES.register
+@CLS_BACKBONES.register
 class AlexNet(ModuleBase):
     r"""
     AlexNet
@@ -22,7 +24,8 @@ class AlexNet(ModuleBase):
         Path to pretrained backbone parameter file,
         Parameter to be loaded in _update_params_
     """
-    default_hyper_params = {"pretrain_model_path": ""}
+    default_hyper_params = {"pretrain_model_path": "",
+                            "output_width": 256,}
 
     def __init__(self):
         super(AlexNet, self).__init__()

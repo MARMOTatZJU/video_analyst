@@ -16,7 +16,7 @@ eps = np.finfo(np.float32).tiny
 class IOULoss(ModuleBase):
 
     default_hyper_params = dict(
-        name="iou_loss",
+        name="iou_loss",  # will be displayed in monitor
         background=0,
         ignore_label=-1,
         weight=1.0,

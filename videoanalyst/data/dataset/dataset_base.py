@@ -10,10 +10,12 @@ from videoanalyst.utils import Registry
 
 TRACK_DATASETS = Registry('TRACK_DATASETS')
 VOS_DATASETS = Registry('VOS_DATASETS')
+CLS_DATASETS = Registry('CLS_DATASETS')
 
 TASK_DATASETS = dict(
     track=TRACK_DATASETS,
     vos=VOS_DATASETS,
+    cls=CLS_DATASETS,
 )
 
 

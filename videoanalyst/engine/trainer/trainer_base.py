@@ -16,10 +16,12 @@ from videoanalyst.utils import Registry, ensure_dir, unwrap_model
 
 TRACK_TRAINERS = Registry('TRACK_TRAINERS')
 VOS_TRAINERS = Registry('VOS_TRAINERS')
+CLS_TRAINERS = Registry('CLS_TRAINERS')
 
 TASK_TRAINERS = dict(
     track=TRACK_TRAINERS,
     vos=VOS_TRAINERS,
+    cls=CLS_TRAINERS,
 )
 
 

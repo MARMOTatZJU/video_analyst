@@ -14,10 +14,12 @@ from ..dataset.dataset_base import DatasetBase
 
 TRACK_SAMPLERS = Registry('TRACK_SAMPLERS')
 VOS_SAMPLERS = Registry('VOS_SAMPLERS')
+CLS_SAMPLERS = Registry('CLS_SAMPLERS')
 
 TASK_SAMPLERS = dict(
     track=TRACK_SAMPLERS,
     vos=VOS_SAMPLERS,
+    cls=CLS_SAMPLERS,
 )
 
 
@@ -30,7 +32,7 @@ class SamplerBase:
     """
     default_hyper_params = dict()
 
-    def __init__(self, datasets: List[DatasetBase] = [], seed: int = 0) -> None:
+    def __init__(self, datasets: List[DatasetBase] = [], seed: int = 0, data_filter = None) -> None:
         r"""
         Dataset Sampler, reponsible for sampling from different dataset
 

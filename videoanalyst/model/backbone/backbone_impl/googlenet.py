@@ -12,14 +12,16 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 from videoanalyst.model.backbone.backbone_base import (TRACK_BACKBONES,
-                                                       VOS_BACKBONES)
+                                                       VOS_BACKBONES,
+                                                       CLS_BACKBONES)
 from videoanalyst.model.module_base import ModuleBase
 
 # from videoanalyst.model.common_opr.common_block import conv_bn_relu
 
 
-@VOS_BACKBONES.register
 @TRACK_BACKBONES.register
+@VOS_BACKBONES.register
+@CLS_BACKBONES.register
 class Inception3(ModuleBase):
     r"""
     GoogLeNet
@@ -38,6 +40,7 @@ class Inception3(ModuleBase):
         pretrain_model_path="",
         crop_pad=4,
         pruned=True,
+        output_width=256,
     )
 
     def __init__(self, transform_input=False):
@@ -76,10 +79,15 @@ class Inception3(ModuleBase):
         #     elif isinstance(m, nn.BatchNorm2d):
         #         nn.init.constant_(m.weight, 1)
         #         nn.init.constant_(m.bias, 0)
+        self.channel_reduce = None
 
+    def update_params(self,):
+        super(Inception3, self).update_params()
+        
+        output_width = self._hyper_params["output_width"]
         self.channel_reduce = nn.Sequential(
-            nn.Conv2d(768, 256, 1),
-            nn.BatchNorm2d(256, eps=0.001),
+            nn.Conv2d(768, output_width, 1),
+            nn.BatchNorm2d(output_width, eps=0.001),
         )
 
     def forward(self, x):

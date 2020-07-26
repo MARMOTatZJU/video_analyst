@@ -1,5 +1,21 @@
 # Data
 
+## Data pipeline
+
+flow
+
+- datasets
+  - provide a catalog of data
+  - usually indexable
+- sampler
+  - sample image
+  - work with filter
+- transformer
+  - do augmentation
+- target
+  - make target & transform format
+    - e.g. HxWxC -> CxHxW
+
 ## Dataset file
 
 ```File Tree

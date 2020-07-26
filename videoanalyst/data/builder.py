@@ -32,7 +32,7 @@ def build(task: str, cfg: CfgNode, seed: int = 0) -> DataLoader:
         seed for random
     """
 
-    if task in ["track", "vos"]:
+    if task in ["track", "vos", "cls"]:  # TODO: decide whether task *cls* share this part
         # build dummy dataset for purpose of dataset setup (e.g. caching path list)
         logger.info("Build dummy AdaptorDataset")
         dummy_py_dataset = AdaptorDataset(

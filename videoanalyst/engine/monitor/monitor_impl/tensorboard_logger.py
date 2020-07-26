@@ -14,11 +14,12 @@ from torch.utils.tensorboard.writer import SummaryWriter
 
 from videoanalyst.utils import ensure_dir
 
-from ..monitor_base import TRACK_MONITORS, VOS_MONITORS, MonitorBase
+from ..monitor_base import TRACK_MONITORS, VOS_MONITORS, CLS_MONITORS, MonitorBase
 
 
 @TRACK_MONITORS.register
 @VOS_MONITORS.register
+@CLS_MONITORS.register
 class TensorboardLogger(MonitorBase):
     r"""Log training info to tensorboard for better visualization
 

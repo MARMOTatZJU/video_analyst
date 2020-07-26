@@ -16,7 +16,7 @@ eps = np.finfo(np.float32).tiny
 class SigmoidCrossEntropyRetina(ModuleBase):
 
     default_hyper_params = dict(
-        name="focal_ce",
+        name="focal_ce",  # will be displayed in monitor
         background=0,
         ignore_label=-1,
         weight=1.0,

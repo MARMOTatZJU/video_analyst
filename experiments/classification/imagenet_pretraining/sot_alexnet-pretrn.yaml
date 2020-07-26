@@ -1,0 +1,203 @@
+# test:
+#   track:
+#     exp_name: &TEST_NAME "sot_alexnet-imgnet"
+#     exp_save: &TEST_SAVE "logs"
+#     model:
+#       backbone:
+#         name: "AlexNet"
+#         AlexNet:
+#           pretrain_model_path: ""
+#       losses:
+#         names: []
+#       task_head:
+#         name: "DenseboxHead"
+#         DenseboxHead:
+#           total_stride: 8
+#           score_size: 17
+#           x_size: 303
+#           num_conv3x3: 3
+#           head_conv_bn: [False, False, True]
+#       task_model:
+#         name: "SiamTrack"
+#         SiamTrack:
+#           pretrain_model_path: "snapshots/sot_alexnet-imgnet/final_model.pkl"
+#     pipeline:
+#       name: "SiamFCppTracker"
+#       SiamFCppTracker:
+#         test_lr: 0.52
+#         window_influence: 0.21
+#         penalty_k: 0.04
+#         num_conv3x3: 3
+#     tester:
+#       names: ["GOT10kTester",]  # (VOTTester|GOT10kTester|LaSOTTester)
+#       VOTTester:
+#         exp_name: *TEST_NAME
+#         exp_save: *TEST_SAVE
+#         device_num: 1
+#         dataset_names: ["VOT2018"]
+#       GOT10kTester:
+#         exp_name: *TEST_NAME
+#         exp_save: *TEST_SAVE
+#         subsets: ["val", "test"]  # (val|test)
+#         device_num: 2
+#       LaSOTTester:
+#         exp_name: *TEST_NAME
+#         exp_save: *TEST_SAVE
+#         subsets: ["test"]  # (train_test|test)
+train:
+  cls:
+    exp_name: &TRAIN_NAME "sot_alexnet-imgnet"
+    exp_save: &TRAIN_SAVE "snapshots"
+    num_processes: 2
+    model:
+      backbone:
+        name: "AlexNet"
+        AlexNet:
+          pretrain_model_path: ""
+      losses:
+        names: ["CrossEntropyClassification",]
+        CrossEntropyClassification: 
+          name: "cls_ce"
+          weight: 1.0
+    #   task_head:
+    #     name: "DenseboxHead"
+    #     DenseboxHead:
+    #       total_stride: 8
+    #       score_size: 17
+    #       x_size: 303
+    #       num_conv3x3: 3
+    #       head_conv_bn: [False, False, True]
+      task_model:
+        name: "RegularClassifier"
+        RegularClassifier:
+          pretrain_model_path: ""
+          nr_classes: 1000
+# ==================================================
+    data:
+      exp_name: *TRAIN_NAME
+      exp_save: *TRAIN_SAVE
+      num_epochs: &NUM_EPOCHS 120
+      minibatch: &MINIBATCH 256
+      num_workers: 16 # 64
+      nr_image_per_epoch: &NR_IMAGE_PER_EPOCH 1281167
+      pin_memory: true # false
+      datapipeline:
+        name: "RegularDatapipeline"
+      sampler:
+        name: "SingleImageSampler"
+        SingleImageSampler: {}
+          # nr_image_per_epoch: 20
+        submodules:
+          dataset:
+            names: ["ImageNetDataset",]
+            ImageNetDataset:
+              dataset_root: "datasets/ILSVRC2015"
+              subset: "train"
+      transformer:
+        names: ["ImagenetPreprocessTransformer", ]
+        ImagenetPreprocessTransformer: {}
+      target:
+        name: "IdentityTarget"
+        IdentityTarget: {}
+
+    trainer:
+      name: "RegularTrainer"
+      RegularTrainer:
+        exp_name: *TRAIN_NAME
+        exp_save: *TRAIN_SAVE
+        max_epoch: *NUM_EPOCHS
+        minibatch: *MINIBATCH
+        nr_image_per_epoch: *NR_IMAGE_PER_EPOCH
+        snapshot: ""
+      monitors:
+        names: ["TextInfo", "TensorboardLogger"]
+        TextInfo:
+          {}
+        TensorboardLogger:
+          exp_name: *TRAIN_NAME
+          exp_save: *TRAIN_SAVE
+
+# ==================================================
+    optim:
+      optimizer:
+        name: "SGD"
+        SGD:
+          # to adjust learning rate, please modify "start_lr" and "end_lr" in lr_policy module bellow
+          momentum: 0.9
+          weight_decay: 0.0001
+          minibatch: *MINIBATCH
+          nr_image_per_epoch: *NR_IMAGE_PER_EPOCH
+          lr_policy:
+          - >
+            {
+            "name": "LinearLR",
+            "start_lr": 0.1,
+            "end_lr": 0.1,
+            "max_epoch": 30
+            }
+          - >
+            {
+            "name": "LinearLR",
+            "start_lr": 0.01,
+            "end_lr": 0.01,
+            "max_epoch": 30
+            }
+          - >
+            {
+            "name": "LinearLR",
+            "start_lr": 0.001,
+            "end_lr": 0.001,
+            "max_epoch": 30
+            }
+          - >
+            {
+            "name": "LinearLR",
+            "start_lr": 0.0001,
+            "end_lr": 0.001,
+            "max_epoch": 30
+            }
+          # lr_multiplier:
+          # - >
+          #   {
+          #   "name": "backbone",
+          #   "regex": "basemodel",
+          #   "ratio": 0.1
+          #   }
+          # - >
+          #   {
+          #   "name": "other",
+          #   "regex": "^((?!basemodel).)*$",
+          #   "ratio": 1
+          #   }
+      # grad_modifier:
+      #   name: "DynamicFreezer"
+      #   DynamicFreezer:
+      #     schedule:
+      #     - >
+      #       {
+      #       "name": "isConv",
+      #       "regex": "basemodel\\.conv.\\.conv.*",
+      #       "epoch": 0,
+      #       "freezed": true
+      #       }
+      #     - >
+      #       {
+      #       "name": "isConv5",
+      #       "regex": "basemodel\\.conv5\\.conv.*",
+      #       "epoch": 5,
+      #       "freezed": false
+      #       }
+      #     - >
+      #       {
+      #       "name": "isConv4",
+      #       "regex": "basemodel\\.conv4\\.conv.*",
+      #       "epoch": 10,
+      #       "freezed": false
+      #       }
+      #     - >
+      #       {
+      #       "name": "isConv3",
+      #       "regex": "basemodel\\.conv3\\.conv.*",
+      #       "epoch": 15,
+      #       "freezed": false
+      #       }

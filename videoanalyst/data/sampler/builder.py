@@ -30,7 +30,8 @@ def build(task: str, cfg: CfgNode, seed: int = 0) -> DatasetBase:
     dataset_cfg = submodules_cfg.dataset
     datasets = dataset_builder.build(task, dataset_cfg)
 
-    if submodules_cfg.filter.name != "":
+    # TODO: deal with configs without **filter** key more elegantly
+    if (len(submodules_cfg.filter) > 0) and (submodules_cfg.filter.name != ""):
         filter_cfg = submodules_cfg.filter
         data_filter = filter_builder.build(task, filter_cfg)
     else:

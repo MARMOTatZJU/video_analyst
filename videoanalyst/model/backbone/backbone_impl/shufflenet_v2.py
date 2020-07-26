@@ -7,15 +7,16 @@ import torch
 import torch.nn as nn
 
 from ...module_base import ModuleBase
-from ..backbone_base import TRACK_BACKBONES, VOS_BACKBONES
+from ..backbone_base import TRACK_BACKBONES, VOS_BACKBONES, CLS_BACKBONES
 
 
 @TRACK_BACKBONES.register
+@CLS_BACKBONES.register
 class ShuffleNetV2_x1_0(ModuleBase):
     default_hyper_params = dict(
         pretrain_model_path="",
         crop_pad=4,
-        head_width=256,
+        output_width=256,
     )
 
     def __init__(self):
@@ -44,7 +45,7 @@ class ShuffleNetV2_x0_5(ModuleBase):
     default_hyper_params = dict(
         pretrain_model_path="",
         crop_pad=4,
-        head_width=256,
+        output_width=256,
     )
 
     def __init__(self):
@@ -207,7 +208,7 @@ class ShuffleNetV2(nn.Module):
                  inverted_residual=InvertedResidual,
                  crop_pad=4,
                  fused_channls=[116, 232, 464],
-                 head_width=256,
+                 output_width=256,
                  **kwargs):
         super(ShuffleNetV2, self).__init__()
         self.crop_pad = crop_pad
@@ -258,8 +259,8 @@ class ShuffleNetV2(nn.Module):
         # self.fc = nn.Linear(output_channels, num_classes)
         # channel_reduce
         self.channel_reduce = nn.Sequential(
-            nn.Conv2d((sum(fused_channls)), head_width, 1, 1, 0, bias=False),
-            nn.BatchNorm2d(head_width),
+            nn.Conv2d((sum(fused_channls)), output_width, 1, 1, 0, bias=False),
+            nn.BatchNorm2d(output_width),
             nn.ReLU(inplace=True),
         )
 
