@@ -46,7 +46,7 @@
 #         subsets: ["test"]  # (train_test|test)
 train:
   cls:
-    exp_name: &TRAIN_NAME "sot_alexnet-imgnet"
+    exp_name: &TRAIN_NAME "alexnet-imgnet"
     exp_save: &TRAIN_SAVE "snapshots"
     num_processes: 2
     model:
