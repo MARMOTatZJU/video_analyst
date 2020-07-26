@@ -78,7 +78,7 @@ train:
       exp_save: *TRAIN_SAVE
       num_epochs: &NUM_EPOCHS 120
       minibatch: &MINIBATCH 256
-      num_workers: 4 # 64
+      num_workers: 64
       nr_image_per_epoch: &NR_IMAGE_PER_EPOCH 1281167
       pin_memory: true # false
       datapipeline:
@@ -128,13 +128,13 @@ train:
           minibatch: *MINIBATCH
           nr_image_per_epoch: *NR_IMAGE_PER_EPOCH
           lr_policy:
-          - >
-            {
-            "name": "LinearLR",
-            "start_lr": 0.000001,
-            "end_lr": 0.1,
-            "max_epoch": 1
-            }
+          # - >
+          #   {
+          #   "name": "LinearLR",
+          #   "start_lr": 0.000001,
+          #   "end_lr": 0.1,
+          #   "max_epoch": 1
+          #   }
           - >
             {
             "name": "LinearLR",
@@ -161,7 +161,7 @@ train:
             "name": "LinearLR",
             "start_lr": 0.0001,
             "end_lr": 0.001,
-            "max_epoch": 29
+            "max_epoch": 30
             }
           # lr_multiplier:
           # - >
