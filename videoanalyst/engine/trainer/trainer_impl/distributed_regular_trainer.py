@@ -18,10 +18,11 @@ from videoanalyst.optim.optimizer.optimizer_base import OptimizerBase
 from videoanalyst.utils import (Timer, average_gradients, ensure_dir,
                                 move_data_to_device, unwrap_model)
 
-from ..trainer_base import TRACK_TRAINERS, TrainerBase
+from ..trainer_base import TRACK_TRAINERS, CLS_TRAINERS, TrainerBase
 
 
 @TRACK_TRAINERS.register
+@CLS_TRAINERS.register
 class DistributedRegularTrainer(TrainerBase):
     r"""
     Distributed Trainer to test the vot dataset, the result is saved as follows
@@ -97,11 +98,13 @@ class DistributedRegularTrainer(TrainerBase):
         self._state["pbar"] = pbar
         self._state["print_str"] = ""
 
+        dataloader = iter(self._dataloader)
+
         time_dict = OrderedDict()
         for iteration, _ in enumerate(pbar):
             self._state["iteration"] = iteration
             with Timer(name="data", output_dict=time_dict):
-                training_data = next(self._dataloader)
+                training_data = next(dataloader)
             training_data = move_data_to_device(training_data,
                                                 self._state["devices"][0])
             schedule_info = self._optimizer.schedule(epoch, iteration)
