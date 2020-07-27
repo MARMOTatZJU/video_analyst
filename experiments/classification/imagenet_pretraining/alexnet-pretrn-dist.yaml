@@ -101,8 +101,8 @@ train:
         IdentityTarget: {}
 
     trainer:
-      name: "RegularTrainer"
-      RegularTrainer:
+      name: "DistributedRegularTrainer"
+      DistributedRegularTrainer:
         exp_name: *TRAIN_NAME
         exp_save: *TRAIN_SAVE
         max_epoch: *NUM_EPOCHS
