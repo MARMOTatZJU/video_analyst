@@ -2,6 +2,7 @@
 
 import numpy as np
 
+from loguru import logger
 import torch
 
 from videoanalyst.pipeline.pipeline_base import TRACK_PIPELINES, PipelineBase
@@ -180,7 +181,10 @@ class SiamFCppOneShotDetector(PipelineBase):
         # self._state['window'] = window
         # self.state['target_pos'] = target_pos
         # self.state['target_sz'] = target_sz
-        self._state['state'] = (target_pos, target_sz)
+        # in one-shot detection, no need to initialize the target position/size state
+        # self._state['state'] = (target_pos, target_sz)
+        self._state['state'] = None
+        
 
     def track(self,
               im_x,
@@ -258,11 +262,40 @@ class SiamFCppOneShotDetector(PipelineBase):
             self._state['ctr'] = ctr
 
         return new_target_pos, new_target_sz
+    
+    def set_roi_bbox(self, state_roi):
+        """
+        Args:
+            state_roi: prior bbox, format: xywh
+                indicating the prior position and size of the detection region
+        :return: None
+        """
+        rect = state_roi  # bbox in xywh format is given for initialization in case of tracking
+        box = xywh2cxywh(rect)
+        target_pos, target_sz = box[:2], box[2:]
+        if self._state['state'] is not None:
+            logger.warning("self._state['state'] has already been set to {old_state} and will be replaced by {new_state}".format(
+                old_state=self._state['state'], new_state=(target_pos, target_sz),
+            ))
+        self._state['state'] = (target_pos, target_sz)
 
     def update(self, im):
-
+        """
+        Perform one-shot detection on the given image
+            *set_roi_bbox* need to be called before
+        
+        Args:
+            im (np.array): search image of one-shot detection, format: xywh
+        """
+        if self._state['state'] is None:
+            logger.error("self._state['state'] has not been set, please call set_roi_bbox first")
+            exit(-1)
+            
         # get track
         target_pos_prior, target_sz_prior = self._state['state']
+        logger.debug("perform one-shot detection around position {position} and with prior size {size}".format(
+            position=target_pos_prior, size=target_sz_prior,
+        ))
         features = self._state['features']
 
         # forward inference to estimate new state

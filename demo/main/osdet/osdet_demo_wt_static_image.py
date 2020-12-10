@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*
 import argparse
+import os
 
 import cv2
 import numpy as np
@@ -36,15 +37,20 @@ def make_parser():
     parser.add_argument('--shift-x',
                         default=0.5,
                         type=float,
-                        help='crop position x, [0, 1]')
+                        help='crop position x (normalized coordinate), range: [0, 1]')
     parser.add_argument('--shift-y',
                         default=0.5,
                         type=float,
-                        help='crop position y, [0, 1]')
+                        help='crop position y (normalized coordinate), range: [0, 1]')
     parser.add_argument('--device',
                         default="cpu",
                         type=str,
                         help='torch.device')
+    parser.add_argument('--output',
+                        default="",
+                        type=str,
+                        help='dump output image to a file instead of imshow window')
+
     return parser
 
 
@@ -73,9 +79,12 @@ if __name__ == "__main__":
 
     im_size = np.array((im.shape[1], im.shape[0]), dtype=np.float)
     crop_pos = np.array([parsed_args.shift_x, parsed_args.shift_y])
-    im_shift = get_subwindow(im, im_size * crop_pos, im_size, im_size)
 
+    # perform one-shot detection with a bbox same as the template's, but on a shifted image
+    im_shift = get_subwindow(im, im_size * crop_pos, im_size, im_size)
+    pipeline.set_roi_bbox(rect)  
     rect_pred = pipeline.update(im_shift)
+
     bbox_pred = xywh2xyxy(rect_pred)
     bbox_pred = tuple(map(int, bbox_pred))
 
@@ -94,8 +103,12 @@ if __name__ == "__main__":
                 font_size, color["border"], font_width)
 
     im_pred = im_
-    cv2.imshow("im_pred", im_pred)
-    cv2.waitKey(0)
+    if len(parsed_args.output) > 0:
+        os.makedirs(os.path.dirname(parsed_args.output), exist_ok=True)
+        cv2.imwrite(parsed_args.output, im_pred)
+    else:
+        cv2.imshow("im_pred", im_pred)
+        cv2.waitKey(0)
 
     from IPython import embed
     embed()

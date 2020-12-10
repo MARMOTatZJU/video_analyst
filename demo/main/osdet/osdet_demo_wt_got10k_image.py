@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*
 import argparse
+import os
 
 import cv2
 from loguru import logger
@@ -50,6 +51,11 @@ def make_parser():
                         default="cpu",
                         type=str,
                         help='torch.device')
+    parser.add_argument('--output',
+                        default="",
+                        type=str,
+                        help='dump output image to a file instead of imshow window')
+
     return parser
 
 
@@ -109,7 +115,11 @@ if __name__ == "__main__":
     im_search = search_frame['image']
     bbox_gt = search_frame['anno']
     rect_gt = xyxy2xywh(bbox_gt)
+
+    # perform one-shot detection with a bbox same as the template's, but on a different frame
+    pipeline.set_roi_bbox(rect)  # perform 
     rect_pred = pipeline.update(im_search)
+
     bbox_pred = xywh2xyxy(rect_pred)
 
     bbox_gt = tuple(map(int, bbox_gt))
@@ -143,8 +153,15 @@ if __name__ == "__main__":
     # cv2.imshow("im_pred", im_pred)
 
     im_concat = cv2.vconcat([im, im_pred])
-    cv2.imshow("im_concat", im_concat)
-    cv2.waitKey(0)
+
+    if len(parsed_args.output) > 0:
+        os.makedirs(os.path.dirname(parsed_args.output), exist_ok=True)
+        cv2.imwrite(parsed_args.output, im_concat)
+    else:
+        cv2.imshow("im_concat", im_concat)
+        cv2.waitKey(0)
+
+
 
     from IPython import embed
     embed()
