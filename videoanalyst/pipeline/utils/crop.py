@@ -149,7 +149,7 @@ def get_crop(im,
     wc = target_sz[0] + context_amount * sum(target_sz)
     hc = target_sz[1] + context_amount * sum(target_sz)
     s_crop = np.sqrt(wc * hc)
-    scale = z_size / s_crop
+    scale = z_size / s_crop  # scale: size@cropped patch / size@original_image
 
     # im_pad = x_pad / scale
     if x_size is None:

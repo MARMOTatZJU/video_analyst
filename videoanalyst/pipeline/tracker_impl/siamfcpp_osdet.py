@@ -18,6 +18,22 @@ class SiamFCppOneShotDetector(PipelineBase):
     r"""
     One-shot detector
     Based on Basic SiamFC++ tracker
+    
+    Usages
+    ------
+        ```
+        model = model_builder.build(task, task_cfg.model)
+        pipeline = pipeline_builder.build(task, task_cfg.pipeline, model)
+        pipeline.init(im, rect)
+        pipeline.set_roi_bbox(rect)
+        rect_pred = pipeline.update(im_search)
+        ```
+
+    self._state['roi_info']: Dict()
+        Information related ot roi bbox 
+        See definition of *set_roi_bbox* for detail 
+    self._state['score']: np.array
+        Original score returned by model, before post-processing
 
     Hyper-parameters
     ----------------
@@ -213,6 +229,7 @@ class SiamFCppOneShotDetector(PipelineBase):
             func_get_subwindow=get_subwindow_tracking,
         )
         # store crop information
+        #   used for remapping bbox on cropped patch to original image
         self._state["crop_info"] = dict(
             target_pos=target_pos,
             target_sz=target_sz,
@@ -265,10 +282,12 @@ class SiamFCppOneShotDetector(PipelineBase):
     
     def set_roi_bbox(self, state_roi):
         """
-        Args:
-            state_roi: prior bbox, format: xywh
+        Arguments
+        ---------
+            state_roi: List or np.array
+                prior bbox, format: xywh
                 indicating the prior position and size of the detection region
-        :return: None
+        
         """
         rect = state_roi  # bbox in xywh format is given for initialization in case of tracking
         box = xywh2cxywh(rect)
@@ -279,13 +298,37 @@ class SiamFCppOneShotDetector(PipelineBase):
             ))
         self._state['state'] = (target_pos, target_sz)
 
+        # set current roi info, useful for downstream application, e.g. patch-wisely processing a large image
+        #   calculation part is copied from videoanalyst/pipeline/utils/crop.py
+        #   TODO: avoid copied code
+        context_amount = self._hyper_params['context_amount']
+        z_size = self._hyper_params['z_size']
+        x_size = self._hyper_params['x_size']
+        wc = target_sz[0] + context_amount * sum(target_sz)
+        hc = target_sz[1] + context_amount * sum(target_sz)
+        s_crop = np.sqrt(wc * hc)
+        scale = z_size / s_crop
+        s_crop = x_size / scale
+        s_score = (x_size - 2*self._hyper_params['score_offset']) / scale
+        self._state['roi_info'] = dict(
+            target_pos=target_pos,
+            target_sz=target_sz,
+            scale=scale,
+            s_crop=s_crop,
+            s_score=s_score,
+        )
+
+        return 
+
     def update(self, im):
         """
         Perform one-shot detection on the given image
             *set_roi_bbox* need to be called before
         
-        Args:
-            im (np.array): search image of one-shot detection, format: xywh
+        Arguments
+        ---------
+            im: np.array
+                search image of one-shot detection, format: xywh
         """
         if self._state['state'] is None:
             logger.error("self._state['state'] has not been set, please call set_roi_bbox first")
