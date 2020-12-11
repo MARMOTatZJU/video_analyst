@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*
 import argparse
 import os
+import os.path as osp
 
 import cv2
 from loguru import logger
@@ -67,6 +68,13 @@ root_cfg.merge_from_file(exp_cfg_path)
 logger.info("Load experiment configuration at: %s" % exp_cfg_path)
 
 # resolve config
+module_name = "demo"
+p = __file__
+while osp.basename(p) != module_name:
+    p = osp.dirname(p)
+ROOT_PATH = osp.dirname(p)
+
+root_cfg = complete_path_wt_root_in_cfg(root_cfg, ROOT_PATH)
 test_cfg = root_cfg.test
 task, task_cfg = specify_task(test_cfg)
 task_cfg.freeze()
