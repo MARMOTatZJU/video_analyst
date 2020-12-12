@@ -28,7 +28,10 @@ class SiamFCppOneShotDetector(PipelineBase):
         pipeline.set_roi_bbox(rect)
         rect_pred = pipeline.update(im_search)
         ```
-
+    self._state['im_z_crop']: np.array
+        Cropped template region, shape=(h, w, 3)
+    self._state['im_x_crop']: np.array
+        Cropped search region, shape=(h, w, 3)
     self._state['roi_info']: Dict()
         Information related ot roi bbox 
         See definition of *set_roi_bbox* for detail 
@@ -87,6 +90,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         min_h=10,
         phase_init="feature",
         phase_track="track",
+        verbose=False,
     )
 
     def __init__(self, *args, **kwargs):
@@ -191,7 +195,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         # else:
         #     window = np.ones((score_size, score_size))
 
-        self._state['z_crop'] = im_z_crop
+        self._state['im_z_crop'] = im_z_crop
         self._state['avg_chans'] = avg_chans
         self._state['features'] = features
         # self._state['window'] = window
@@ -200,7 +204,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         # in one-shot detection, no need to initialize the target position/size state
         # self._state['state'] = (target_pos, target_sz)
         self._state['state'] = None
-        
+        self._state['state_used'] = False
 
     def track(self,
               im_x,
@@ -214,6 +218,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         else:
             avg_chans = self._state['avg_chans']
 
+        # crop search region image for infernece
         z_size = self._hyper_params['z_size']
         x_size = self._hyper_params['x_size']
         context_amount = self._hyper_params['context_amount']
@@ -264,7 +269,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         #     new_target_pos, new_target_sz)
 
         # record basic mid-level info
-        self._state['x_crop'] = im_x_crop
+        self._state['im_x_crop'] = im_x_crop
         # bbox_pred_in_crop = np.rint(box[best_pscore_id]).astype(np.int)
         bbox_pred_in_crop = box[best_pscore_id]
         self._state['bbox_pred_in_crop'] = bbox_pred_in_crop
@@ -292,7 +297,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         rect = state_roi  # bbox in xywh format is given for initialization in case of tracking
         box = xywh2cxywh(rect)
         target_pos, target_sz = box[:2], box[2:]
-        if self._state['state'] is not None:
+        if self._hyper_params['verbose'] and not self._state.get('state_used', False):
             logger.warning("self._state['state'] has already been set to {old_state} and will be replaced by {new_state}".format(
                 old_state=self._state['state'], new_state=(target_pos, target_sz),
             ))
@@ -336,9 +341,10 @@ class SiamFCppOneShotDetector(PipelineBase):
             
         # get track
         target_pos_prior, target_sz_prior = self._state['state']
-        logger.debug("perform one-shot detection around position {position} and with prior size {size}".format(
-            position=target_pos_prior, size=target_sz_prior,
-        ))
+        if self._hyper_params['verbose']:
+            logger.debug("perform one-shot detection around position {position} and with prior size {size}".format(
+                position=target_pos_prior, size=target_sz_prior,
+            ))
         features = self._state['features']
 
         # forward inference to estimate new state
@@ -349,7 +355,8 @@ class SiamFCppOneShotDetector(PipelineBase):
                                            update_state=True)
 
         # save underlying state
-        self._state['state'] = target_pos, target_sz
+        # self._state['state'] = target_pos, target_sz
+        self._state['state_used'] = True
 
         # return rect format
         track_rect = cxywh2xywh(np.concatenate([target_pos, target_sz],
