@@ -52,10 +52,11 @@ def make_parser():
                         default="cpu",
                         type=str,
                         help='torch.device')
-    parser.add_argument('--output',
-                        default="",
-                        type=str,
-                        help='dump output image to a file instead of imshow window')
+    parser.add_argument(
+        '--output',
+        default="",
+        type=str,
+        help='dump output image to a file instead of imshow window')
 
     return parser
 
@@ -125,7 +126,7 @@ if __name__ == "__main__":
     rect_gt = xyxy2xywh(bbox_gt)
 
     # perform one-shot detection with a bbox same as the template's, but on a different frame
-    pipeline.set_roi_bbox(rect)  # perform 
+    pipeline.set_roi_bbox(rect)  # perform
     rect_pred = pipeline.update(im_search)
 
     bbox_pred = xywh2xyxy(rect_pred)
@@ -168,8 +169,6 @@ if __name__ == "__main__":
     else:
         cv2.imshow("im_concat", im_concat)
         cv2.waitKey(0)
-
-
 
     from IPython import embed
     embed()

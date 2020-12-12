@@ -36,22 +36,25 @@ def make_parser():
         default="experiments/osdet/test/siamfcpp_googlenet-osdet.yaml",
         type=str,
         help='experiment configuration')
-    parser.add_argument('--shift-x',
-                        default=0.5,
-                        type=float,
-                        help='crop position x (normalized coordinate), range: [0, 1]')
-    parser.add_argument('--shift-y',
-                        default=0.5,
-                        type=float,
-                        help='crop position y (normalized coordinate), range: [0, 1]')
+    parser.add_argument(
+        '--shift-x',
+        default=0.5,
+        type=float,
+        help='crop position x (normalized coordinate), range: [0, 1]')
+    parser.add_argument(
+        '--shift-y',
+        default=0.5,
+        type=float,
+        help='crop position y (normalized coordinate), range: [0, 1]')
     parser.add_argument('--device',
                         default="cpu",
                         type=str,
                         help='torch.device')
-    parser.add_argument('--output',
-                        default="",
-                        type=str,
-                        help='dump output image to a file instead of imshow window')
+    parser.add_argument(
+        '--output',
+        default="",
+        type=str,
+        help='dump output image to a file instead of imshow window')
 
     return parser
 
@@ -91,7 +94,7 @@ if __name__ == "__main__":
 
     # perform one-shot detection with a bbox same as the template's, but on a shifted image
     im_shift = get_subwindow(im, im_size * crop_pos, im_size, im_size)
-    pipeline.set_roi_bbox(rect)  
+    pipeline.set_roi_bbox(rect)
     rect_pred = pipeline.update(im_shift)
 
     bbox_pred = xywh2xyxy(rect_pred)

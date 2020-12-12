@@ -284,7 +284,7 @@ class SiamFCppOneShotDetector(PipelineBase):
             self._state['ctr'] = ctr
 
         return new_target_pos, new_target_sz
-    
+
     def set_roi_bbox(self, state_roi):
         """
         Arguments
@@ -297,10 +297,14 @@ class SiamFCppOneShotDetector(PipelineBase):
         rect = state_roi  # bbox in xywh format is given for initialization in case of tracking
         box = xywh2cxywh(rect)
         target_pos, target_sz = box[:2], box[2:]
-        if self._hyper_params['verbose'] and not self._state.get('state_used', False):
-            logger.warning("self._state['state'] has already been set to {old_state} and will be replaced by {new_state}".format(
-                old_state=self._state['state'], new_state=(target_pos, target_sz),
-            ))
+        if self._hyper_params['verbose'] and not self._state.get(
+                'state_used', False):
+            logger.warning(
+                "self._state['state'] has already been set to {old_state} and will be replaced by {new_state}"
+                .format(
+                    old_state=self._state['state'],
+                    new_state=(target_pos, target_sz),
+                ))
         self._state['state'] = (target_pos, target_sz)
 
         # set current roi info, useful for downstream application, e.g. patch-wisely processing a large image
@@ -314,7 +318,7 @@ class SiamFCppOneShotDetector(PipelineBase):
         s_crop = np.sqrt(wc * hc)
         scale = z_size / s_crop
         s_crop = x_size / scale
-        s_score = (x_size - 2*self._hyper_params['score_offset']) / scale
+        s_score = (x_size - 2 * self._hyper_params['score_offset']) / scale
         self._state['roi_info'] = dict(
             target_pos=target_pos,
             target_sz=target_sz,
@@ -323,7 +327,7 @@ class SiamFCppOneShotDetector(PipelineBase):
             s_score=s_score,
         )
 
-        return 
+        return
 
     def update(self, im):
         """
@@ -336,15 +340,20 @@ class SiamFCppOneShotDetector(PipelineBase):
                 search image of one-shot detection, format: xywh
         """
         if self._state['state'] is None:
-            logger.error("self._state['state'] has not been set, please call set_roi_bbox first")
+            logger.error(
+                "self._state['state'] has not been set, please call set_roi_bbox first"
+            )
             exit(-1)
-            
+
         # get track
         target_pos_prior, target_sz_prior = self._state['state']
         if self._hyper_params['verbose']:
-            logger.debug("perform one-shot detection around position {position} and with prior size {size}".format(
-                position=target_pos_prior, size=target_sz_prior,
-            ))
+            logger.debug(
+                "perform one-shot detection around position {position} and with prior size {size}"
+                .format(
+                    position=target_pos_prior,
+                    size=target_sz_prior,
+                ))
         features = self._state['features']
 
         # forward inference to estimate new state
